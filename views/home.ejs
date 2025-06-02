@@ -8,7 +8,7 @@
   <body>
     <%- include('./partials/nav') %>
 
-    <h1>Hii, Blogs are ready to read</h1>
+    <h3 class="mt-3 ms-3">Hii, Blogs are ready to read</h3>
 
     <!-- <%= JSON.stringify(blogs) %> -->
 
@@ -19,8 +19,7 @@
         <div class="card h-100">
           <img src="<%= blog.coverImageURL %>" class="card-img-top" alt="..." />
           <div class="card-body d-flex flex-column">
-            <h5 class="card-title"><%= blog.title %></h5>
-            <p class="card-text flex-grow-1"><%= blog.body %></p>
+            <h6 class="card-title"><%= blog.title %></h6>
             <a href="/blog/<%= blog._id %>" class="btn btn-primary mt-auto">View</a>
           </div>
         </div>

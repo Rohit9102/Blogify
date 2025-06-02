@@ -25,33 +25,7 @@ router.get("/add-new", (req, res) => {
   });
 });
 
-
-router.get("/:id", async(req, res) => {
-  const blog = await Blog.findById(req.params.id).populate("createdBy");
-  const comments = await Comment.find({blog: req.params.id}).populate("createdBy");
-
-  console.log("comments", comments);
-
-
-  return res.render('blog', {
-    user:req.user,
-    blog,
-    comments,
-  })
-})
-
-
-router.post("/comment/:blogId", async(req, res) => {
-  await Comment.create({
-    content: req.body.content,
-    blog : req.params.blogId,
-    createdBy: req.user._id,
-  });
-  return res.redirect(`/blog/${req.params.blogId}`);
-});
-
 router.post("/", upload.single("coverImage"), async (req, res) => {
-
   const { title, body } = req.body;
 
   const blog = await Blog.create({
@@ -61,6 +35,63 @@ router.post("/", upload.single("coverImage"), async (req, res) => {
     coverImageURL: `/uploads/${req.file.filename}`,
   });
   return res.redirect(`/blog/${blog._id}`);
+});
+
+router.get("/:id", async (req, res) => {
+  const blog = await Blog.findById(req.params.id).populate("createdBy");
+  const comments = await Comment.find({ blog: req.params.id }).populate("createdBy");
+
+  return res.render("blog", {
+    user: req.user,
+    blog,
+    comments,
+  });
+});
+
+router.post("/comment/:blogId", async (req, res) => {
+  await Comment.create({
+    content: req.body.content,
+    blog: req.params.blogId,
+    createdBy: req.user._id,
+  });
+  return res.redirect(`/blog/${req.params.blogId}`);
+});
+
+
+
+router.get("/edit/:id", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!req.user || req.user._id !== blog.createdBy.toString()) {
+    return res.status(403).send("Unauthorized");
+  }
+  return res.render("update", { blog });
+});
+
+
+router.post("/update/:id", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!req.user || req.user._id !== blog.createdBy.toString()) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  await Blog.findByIdAndUpdate(req.params.id, {
+    title: req.body.title,
+    body: req.body.body,
+
+  });
+
+  return res.redirect(`/blog/${req.params.id}`);
+});
+
+// Delete route
+router.post("/delete/:id", async (req, res) => {
+  const blog = await Blog.findById(req.params.id);
+  if (!req.user || req.user._id !== blog.createdBy.toString()) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  await Blog.findByIdAndDelete(req.params.id);
+  return res.redirect("/");
 });
 
 module.exports = router;
