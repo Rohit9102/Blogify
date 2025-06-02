@@ -8,9 +8,9 @@
   <body>
     <%- include('./partials/nav') %>
 
-    <h3 class="mt-3 ms-3">Hii, Blogs are ready to read</h3>
+     <h3 class="mt-3 ms-3" id="greetingText"></h3>
 
-    <!-- <%= JSON.stringify(blogs) %> -->
+
 
     <div class="container mt-3">
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
@@ -27,6 +27,23 @@
     <% }) %>
   </div>
 </div>
+
+<script>
+  const userName = "<%= user.fullName %>";
+  const message = `🌟 Welcome back, <%= user.fullName %>! Ready to explore some awesome blogs ? ✨`;
+  let index = 0;
+  const speed = 50;
+
+  function typeWriter() {
+    if (index < message.length) {
+      document.getElementById("greetingText").innerHTML += message.charAt(index);
+      index++;
+      setTimeout(typeWriter, speed);
+    }
+  }
+
+  window.onload = typeWriter;
+</script>
 
 
     <%- include('./partials/script') %>
