@@ -1,14 +1,15 @@
 const { Router } = require("express");
 const multer = require("multer");
 const path = require("path");
-
+const fs = require("fs");
 const Blog = require("../models/blog");
 const Comment = require("../models/comment");
+const cloudinary = require("../config/cloudinary"); 
 
 const router = Router();
 
 const storage = multer.diskStorage({
-  destination: function (req, res, cb) {
+  destination: function (req, file, cb) {
     cb(null, path.resolve(`./public/uploads/`));
   },
   filename: function (req, file, cb) {
@@ -27,14 +28,30 @@ router.get("/add-new", (req, res) => {
 
 router.post("/", upload.single("coverImage"), async (req, res) => {
   const { title, body } = req.body;
+  let imageUrl = "";
 
-  const blog = await Blog.create({
-    body,
-    title,
-    createdBy: req.user._id,
-    coverImageURL: `/uploads/${req.file.filename}`,
-  });
-  return res.redirect(`/blog/${blog._id}`);
+  try {
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "blog-images"
+      });
+      imageUrl = result.secure_url;
+
+      fs.unlinkSync(req.file.path);
+    }
+
+    const blog = await Blog.create({
+      body,
+      title,
+      createdBy: req.user._id,
+      coverImageURL: imageUrl,
+    });
+
+    return res.redirect(`/blog/${blog._id}`);
+  } catch (error) {
+    console.error("Cloudinary Upload Error:", error);
+    return res.status(500).send("Image upload failed.");
+  }
 });
 
 router.get("/:id", async (req, res) => {
